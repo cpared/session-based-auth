@@ -26,7 +26,7 @@ type Handler struct {
 	Service Service
 }
 
-func NewHandler(serv Service) *Handler {
+func New(serv Service) *Handler {
 	return &Handler{
 		Service: serv,
 	}

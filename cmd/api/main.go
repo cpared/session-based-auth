@@ -1,8 +1,11 @@
 package main
 
 import (
-	sessionbased "session-based-auth/internal/handlers/session_based"
-	serv "session-based-auth/internal/services"
+	pokehdl "session-based-auth/internal/handlers/pokemon"
+	sesshdl "session-based-auth/internal/handlers/session_based"
+	pokerepo "session-based-auth/internal/repositories/pokemon"
+	sesssvc "session-based-auth/internal/services"
+	pokesvc "session-based-auth/internal/services/pokemon"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,10 +13,20 @@ import (
 func main() {
 	r := gin.Default()
 
-	service := serv.NewService()
-	sess := sessionbased.NewHandler(service)
+	// Init Repositories
+	pokeRepo := pokerepo.New()
 
+	// Init Services
+	pokeSvc := pokesvc.New(pokeRepo)
+	sessSvc := sesssvc.New()
+
+	// Init Handlers
+	sess := sesshdl.New(sessSvc)
+	pokeHdl := pokehdl.New(pokeSvc)
+
+	// Routes
 	r.POST("/login", sess.Validate())
+	r.GET("/types/pokemons/:id", pokeHdl.GetPokemonData())
 
-  	r.Run()
+	r.Run()
 }
