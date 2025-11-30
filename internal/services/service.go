@@ -2,12 +2,10 @@ package service
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Session struct {
-	ID uuid.UUID
+	ID string
 	CreationDate *time.Time
 	ExpirationDate *time.Time
 }
@@ -22,21 +20,21 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) Get(userID string) uuid.UUID {
+func (s *Service) Get(userID string) string {
 	val, found := s.sessions[userID]
 	if !found {
-		return uuid.Nil
+		return ""
 	}
 
 	if val.ExpirationDate.Before(time.Now()) {
 		delete(s.sessions, userID)
-		return uuid.Nil
+		return ""
 	}
 	
 	return val.ID
 }
 
-func (s *Service) Save(userID string, sess uuid.UUID) {
+func (s *Service) Save(userID string, sess string) {
 	t := time.Now()
 	exp := t.Add(30 * time.Minute)
 	s.sessions[userID] = &Session{

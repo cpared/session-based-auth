@@ -13,12 +13,12 @@ var validUsers = map[string]string{
 }
 
 type Service interface {
-	Get(userID string) uuid.UUID
-	Save(userID string, sess uuid.UUID)
+	Get(userID string) string
+	Save(userID string, sess string)
 }
 
 type Body struct {
-	User string `json:"user"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
@@ -44,20 +44,29 @@ func (h *Handler) Validate() gin.HandlerFunc {
 		pass, found := validUsers[body.User]
 		if !found || pass != body.Password {
 			fmt.Printf("Invalid credentials")
-			c.JSON(http.StatusUnauthorized, gin.H{ "err": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "invalid credentials"})
 			return
 		}
 
-		if uniqueID := h.Service.Get(body.User); uniqueID != uuid.Nil {
+		if sessionID := h.Service.Get(body.User); sessionID != "" {
 			fmt.Println("session token already exist!")
-			c.JSON(http.StatusOK, gin.H{"token": uniqueID})
+			c.JSON(http.StatusOK, gin.H{"message": "login OK"})
 			return
 		}
 
 		// 2. Create UUID for session
-		uniqueID := uuid.New()
-		h.Service.Save(body.User, uniqueID)
-		
-        c.JSON(http.StatusOK, gin.H{"token": uniqueID})
-    }
+		sessionID := uuid.NewString()
+		c.SetCookie(
+			"sessionID",
+			sessionID,
+			3600, // Duration
+			"/",
+			"localhost",
+			false, // Secure: only HTTPS
+			true,  // HttpOnly: no accesible from JS
+		)
+
+		h.Service.Save(body.User, sessionID)
+		c.JSON(http.StatusOK, gin.H{"message": "login OK"})
+	}
 }
