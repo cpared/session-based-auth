@@ -1,4 +1,4 @@
-package sessionbased
+package session
 
 import (
 	"context"
@@ -14,11 +14,6 @@ type Service interface {
 	Create(ctx context.Context, user, password string) *session.Session
 }
 
-type Body struct {
-	User     string `json:"user"`
-	Password string `json:"password"`
-}
-
 type Handler struct {
 	service Service
 }
@@ -31,7 +26,7 @@ func New(serv Service) *Handler {
 
 func (h *Handler) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var body Body
+		var body BodyRequest
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

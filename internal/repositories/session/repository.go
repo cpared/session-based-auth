@@ -54,7 +54,9 @@ func (r *Repository) Get(ctx context.Context, sessionID string) *Session {
 	if sess, found := r.sessions[sessionID]; found {
 		return sess
 	}
-	return &Session{}
+	return &Session{
+		ExpirationDate: &time.Time{},
+	}
 }
 
 func (r *Repository) Delete(ctx context.Context, sessionID string) *Session {
@@ -62,7 +64,9 @@ func (r *Repository) Delete(ctx context.Context, sessionID string) *Session {
 		delete(r.sessions, sessionID)
 		return sess
 	}
-	return &Session{}
+	return &Session{
+		ExpirationDate: &time.Time{},
+	}
 }
 
 func (r *Repository) Refresh(ctx context.Context, sessionID string) *Session {
@@ -71,5 +75,7 @@ func (r *Repository) Refresh(ctx context.Context, sessionID string) *Session {
 		sess.ExpirationDate = &exp
 		return sess
 	}
-	return &Session{}
+	return &Session{
+		ExpirationDate: &time.Time{},
+	}
 }

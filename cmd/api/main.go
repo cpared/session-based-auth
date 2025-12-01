@@ -2,8 +2,9 @@ package main
 
 import (
 	pokehdl "session-based-auth/internal/handlers/pokemon"
-	sesshdl "session-based-auth/internal/handlers/session"
-	auth "session-based-auth/internal/middleware/auth"
+	loginhdl "session-based-auth/internal/handlers/login"
+	logouthdl "session-based-auth/internal/handlers/logout"
+	middleware "session-based-auth/internal/middleware"
 	pokerepo "session-based-auth/internal/repositories/pokemon"
 	sessrepo "session-based-auth/internal/repositories/session"
 	pokesvc "session-based-auth/internal/services/pokemon"
@@ -27,13 +28,14 @@ func main() {
 	sessSvc := sesssvc.New(sessRepo)
 
 	// Init Handlers
-	sess := sesshdl.New(sessSvc)
+	loginHdl := loginhdl.New(sessSvc)
+	logoutHdl := logouthdl.New(sessSvc)
 	pokeHdl := pokehdl.New(pokeSvc)
 
 	// Routes
-	r.POST("/login", sess.Login())
-	// r.POST("/logut", gin.H{"message": "logued out!"})
-	r.GET("/types/pokemons/:id", auth.Validate(sessSvc) ,pokeHdl.GetPokemonData())
+	r.POST("/login", loginHdl.Login())
+	r.POST("/logout", middleware.Auth(sessSvc), logoutHdl.Logout())
+	r.GET("/types/pokemons/:id", middleware.Auth(sessSvc), pokeHdl.GetPokemonData())
 
 	r.Run()
 }

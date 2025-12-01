@@ -35,3 +35,7 @@ func (s *Service) Get(ctx context.Context, userID string) *session.Session {
 func (s *Service) Create(ctx context.Context, user, password string) *session.Session {
 	return s.repository.Create(ctx, user, password)
 }
+
+func (s *Service) Delete(ctx context.Context, sessID string) string {
+	return s.repository.Delete(ctx, sessID).ID
+}
