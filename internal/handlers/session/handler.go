@@ -1,20 +1,17 @@
 package sessionbased
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"session-based-auth/internal/repositories/session"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
-var validUsers = map[string]string{
-	"cpared": "12345",
-}
-
 type Service interface {
-	Get(userID string) string
-	Save(userID string, sess string)
+	Get(ctx context.Context, userID string) *session.Session
+	Create(ctx context.Context, user, password string) *session.Session
 }
 
 type Body struct {
@@ -23,16 +20,16 @@ type Body struct {
 }
 
 type Handler struct {
-	Service Service
+	service Service
 }
 
 func New(serv Service) *Handler {
 	return &Handler{
-		Service: serv,
+		service: serv,
 	}
 }
 
-func (h *Handler) Validate() gin.HandlerFunc {
+func (h *Handler) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body Body
 		if err := c.ShouldBindJSON(&body); err != nil {
@@ -41,32 +38,24 @@ func (h *Handler) Validate() gin.HandlerFunc {
 		}
 
 		// 1. Authentication
-		pass, found := validUsers[body.User]
-		if !found || pass != body.Password {
+		sess := h.service.Create(c.Request.Context(), body.User, body.Password)
+		if sess.ID == "" {
 			fmt.Printf("Invalid credentials")
 			c.JSON(http.StatusUnauthorized, gin.H{"err": "invalid credentials"})
 			return
 		}
 
-		if sessionID := h.Service.Get(body.User); sessionID != "" {
-			fmt.Println("session token already exist!")
-			c.JSON(http.StatusOK, gin.H{"message": "login OK"})
-			return
-		}
-
-		// 2. Create UUID for session
-		sessionID := uuid.NewString()
+		// 2. Set UUID cookie
 		c.SetCookie(
 			"sessionID",
-			sessionID,
-			3600, // Duration
+			sess.ID,
+			sess.TTL, // Duration
 			"/",
 			"localhost",
 			false, // Secure: only HTTPS
 			true,  // HttpOnly: no accesible from JS
 		)
 
-		h.Service.Save(body.User, sessionID)
 		c.JSON(http.StatusOK, gin.H{"message": "login OK"})
 	}
 }

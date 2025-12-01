@@ -1,9 +1,12 @@
 package pokemon
 
-import repositories "session-based-auth/internal/repositories/pokemon"
+import (
+	"context"
+	repositories "session-based-auth/internal/repositories/pokemon"
+)
 
 type PokemonRepository interface {
-	GetPokemonTypeByID(name string) *repositories.Type
+	GetPokemonTypeByID(ctx context.Context, name string) *repositories.Type
 }
 
 type Service struct {
@@ -16,6 +19,6 @@ func New(pr PokemonRepository) *Service {
 	}
 }
 
-func (s *Service) GetPokemonDataByID(id string) *repositories.Type {
-	return s.pr.GetPokemonTypeByID(id)
+func (s *Service) GetPokemonDataByID(ctx context.Context,id string) *repositories.Type {
+	return s.pr.GetPokemonTypeByID(ctx, id)
 }

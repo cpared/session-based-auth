@@ -1,6 +1,7 @@
 package pokemon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -25,7 +26,7 @@ func New() *Repository {
 
 // TODO: This is a bad practice to retorn the same data access object (DAO) that handle the repository
 // This should convert into a data transfer object (DTO) that should be a domain object
-func (r *Repository) GetPokemonTypeByID(name string) *Type {
+func (r *Repository) GetPokemonTypeByID(ctx context.Context,name string) *Type {
 	resp, err := r.client.R().Get(strings.ReplaceAll(URL, "{id}", name))
 	if err != nil {
 		fmt.Println("cannot get pokemon data err: %v", err)

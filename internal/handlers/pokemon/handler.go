@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	repositories "session-based-auth/internal/repositories/pokemon"
 
@@ -8,7 +9,7 @@ import (
 )
 
 type Service interface {
-	GetPokemonDataByID(id string) *repositories.Type
+	GetPokemonDataByID(ctx context.Context,id string) *repositories.Type
 }
 
 type Handler struct {
@@ -23,11 +24,13 @@ func New(serv Service) *Handler {
 
 func (h *Handler) GetPokemonData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 1. Validate auth
 		id := c.Param("id")
+		if id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid pokemon id or name"})
+			return
+		}
 
-		// 2. Call service
-		data := h.service.GetPokemonDataByID(id)
+		data := h.service.GetPokemonDataByID(c.Request.Context(), id)
 
 		c.JSON(http.StatusOK, gin.H{"data": data})
 	}
