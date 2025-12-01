@@ -40,7 +40,7 @@ func (h *Handler) Login() gin.HandlerFunc {
 			return
 		}
 
-		// 2. Set UUID cookie
+		// 2. Set UUID cookie and TTL for client side
 		c.SetCookie(
 			"sessionID",
 			sess.ID,

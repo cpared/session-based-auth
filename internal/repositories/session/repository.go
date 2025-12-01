@@ -20,7 +20,7 @@ type Repository struct {
 func New() *Repository {
 	return &Repository{
 		validUsers: map[string]string{
-			"cpared": "12345",
+			"test_user": "12345",
 		},
 		sessions: map[string]*Session{},
 	}
