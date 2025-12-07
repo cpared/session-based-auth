@@ -42,6 +42,16 @@ func (h *Handler) Logout() gin.HandlerFunc{
 
 		h.service.Delete(c.Request.Context(), sess.ID)
 
+		c.SetCookie(
+			"sessionID",
+			sess.ID,
+			-1, // Duration
+			"/",
+			"localhost",
+			false, // Secure: only HTTPS
+			true,  // HttpOnly: no accesible from JS
+		)
+
 		c.JSON(http.StatusOK, gin.H{"message": "logout succesfull!"})
 	}
 }
